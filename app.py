@@ -1,6 +1,8 @@
 import logging
 import os
+import random
 import re
+import string
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask, jsonify, request, after_this_request
@@ -41,15 +43,6 @@ def log_request_info():
         return response
 
 
-users = [
-    dict(
-        name="user_{}".format(user_no),
-        email="email_user_{}.@example.com".format(user_no)
-    )
-    for user_no in range(1, 1001)
-]
-
-
 def paginate(arr):
     def wrap(page=0, page_size=5):
         skip = page * page_size
@@ -57,6 +50,30 @@ def paginate(arr):
         return arr[skip:to]
 
     return wrap
+
+
+LETTERS = string.ascii_lowercase
+
+
+def get_random_string(length=10):
+    return ''.join([random.choice(LETTERS) for _ in range(length)])
+
+
+def initiate_users(size=10):
+    for user_no in range(1, size + 1):
+        user_id = str(user_no).zfill(4)
+        random_name = get_random_string(5).capitalize()
+        random_email = '{}@example.com'.format(get_random_string(10))
+
+        random_user = dict(
+            id=user_id,
+            name=random_name,
+            email=random_email
+        )
+        yield random_user
+
+
+USERS = [user for user in initiate_users(1000)]
 
 
 @app.route('/')
@@ -76,7 +93,7 @@ def search_users():
                 re.search(email, user.get('email'), re.IGNORECASE),
                 re.search(name, user.get('name'), re.IGNORECASE)
             ]),
-            users
+            USERS
         )
     )
 
