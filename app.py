@@ -61,12 +61,11 @@ def get_random_string(length=10):
 
 def initiate_users(size=10):
     for user_no in range(1, size + 1):
-        user_id = str(user_no).zfill(4)
         random_name = get_random_string(5).capitalize()
         random_email = '{}@example.com'.format(get_random_string(10))
 
         random_user = dict(
-            id=user_id,
+            id=user_no,
             name=random_name,
             email=random_email
         )
