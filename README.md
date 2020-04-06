@@ -1,7 +1,11 @@
 # School Management
 
+## Dependencies
+
+- `Flask` to implement API logic
+- `Flask-SQLAlchemy` to handle the database
+- `PyJWT` to verify JWT token
+
 ## Features
 
-- Use `Flask` to implement API logic
-- Use `Flask-SQLAlchemy` to handle the database
-- Use `PyJWT` to verify JWT token
+- [x] Manage `users` at the endpoint `/users`
