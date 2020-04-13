@@ -1,6 +1,8 @@
-from app import db
-from models import BaseModel
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from models import BaseModel
+from models import db
+
 
 # from sqlalchemy import Column, ForeignKey
 
