@@ -1,18 +1,29 @@
 import logging
 import os
 from logging.handlers import RotatingFileHandler
-from werkzeug.utils import find_modules, import_string
 
 from flask import Flask, jsonify, request, after_this_request
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+
+from config import Config as DefaultConfig
+
+Config = os.getenv('APP_CONFIG', DefaultConfig)
 
 app = Flask(__name__)
+app.config.from_object(Config)
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+with app.app_context():
+    # Register Blueprints
+    from blueprints.user_management import blueprint as user_blueprint
+
+    app.register_blueprint(user_blueprint)
+
+# Settings
 app.url_map.strict_slashes = False
-
-for name in find_modules('blueprints'):
-    mod = import_string(name)
-    if hasattr(mod, 'blueprint'):
-        app.register_blueprint(mod.blueprint)
-
 if not app.debug:
     if not os.path.exists('logs'):
         os.mkdir('logs')
@@ -47,6 +58,7 @@ def log_request_info():
         return response
 
 
+# Index route
 @app.route('/')
 def index():
     return jsonify(dict(message='Hello World!'))

@@ -1,14 +1,10 @@
 import re
 import uuid
 
-from flask import jsonify, request, Blueprint
+from flask import jsonify, request
 
-from helpers.common import initiate_users, paginate
-
-INITIAL_USER_SIZE = 100
-USERS_DICT = {user['id']: user for user in initiate_users(INITIAL_USER_SIZE)}
-
-blueprint = Blueprint('users', import_name=__name__, url_prefix='/users')
+from helpers.common import paginate
+from . import blueprint, USERS_DICT
 
 
 @blueprint.route('/', methods=['POST'])
