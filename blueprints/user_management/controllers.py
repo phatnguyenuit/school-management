@@ -38,7 +38,11 @@ def search_users():
 
     # Pagination
     page = request.args.get('page', 0, type=int)
-    page_size = request.args.get('pageSize', 5, type=int)
+    page_size = request.args.get('pageSize', 10, type=int)
+    if page_size > 100:
+        return jsonify(
+            message='Page size should be less than or equal to 100.'
+        ), 400
     return jsonify(dict(
         records=paginator(page, page_size),
         page=page,
