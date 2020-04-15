@@ -26,6 +26,19 @@ def init_database(app):
 def setting_app(app):
     user_cli = AppGroup('users')
 
+    @user_cli.command('create')
+    @click.argument('name')
+    @click.argument('email')
+    @click.argument('password')
+    def create_users(name, email, password):
+        from blueprints.user_management.models import User
+        user = User(name=name, email=email)
+        user.set_password(password)
+
+        db.session.add(user)
+        db.session.commit()
+        app.logger.info('Success! Saved user to DB {}'.format(user))
+
     @user_cli.command('init')
     @click.argument('size')
     def create_users(size):

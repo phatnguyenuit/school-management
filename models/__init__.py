@@ -8,10 +8,14 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 
+def generate_uuid_str():
+    return str(uuid.uuid1())
+
+
 class BaseModel(db.Model):
     __abstract__ = True
 
-    id = db.Column(db.String(192), default=uuid.uuid1, primary_key=True, )
+    id = db.Column(db.String(192), default=generate_uuid_str, primary_key=True, )
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,
                            onupdate=datetime.utcnow, index=True)
