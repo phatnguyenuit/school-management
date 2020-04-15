@@ -5,7 +5,7 @@ from . import blueprint
 from .models import User
 
 
-@blueprint.route('/', methods=['POST'])
+@blueprint.route('/', methods=['POST'], strict_slashes=False)
 def create_user():
     payload = request.get_json()
     if any([key not in payload for key in ('name', 'email')]):
@@ -79,7 +79,7 @@ def delete_user(user_id):
         user = User.query.get(user_id)
         if not user:
             return jsonify(message='User not found'), 404
-        user.query.delete()
+        db.session.delete(user)
         db.session.commit()
         return jsonify({})
     except ValueError:

@@ -21,9 +21,13 @@ class User(BaseModel):
     def update(self, **kwargs):
         name = kwargs.get('name', self.name)
         email = kwargs.get('email', self.email)
+        password = kwargs.get('password')
 
         self.name = name
         self.email = email
+
+        if password:
+            self.set_password(password)
 
     @property
     def serialize(self):
