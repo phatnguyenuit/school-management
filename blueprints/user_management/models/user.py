@@ -18,5 +18,20 @@ class User(BaseModel):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    def update(self, **kwargs):
+        name = kwargs.get('name', self.name)
+        email = kwargs.get('email', self.email)
+
+        self.name = name
+        self.email = email
+
+    @property
+    def serialize(self):
+        return dict(
+            id=self.id,
+            name=self.name,
+            email=self.email
+        )
+
     def __repr__(self):
         return '<User %r>' % self.name

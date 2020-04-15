@@ -1,20 +1,19 @@
-import re
-import uuid
-
 from flask import jsonify, request
 
-from helpers.common import paginate
-from . import blueprint, USERS_DICT
+from models import db
+from . import blueprint
+from .models import User
 
 
 @blueprint.route('/', methods=['POST'])
 def create_user():
-    data = request.get_json()
-    if any([key not in data for key in ('name', 'email')]):
+    payload = request.get_json()
+    if any([key not in payload for key in ('name', 'email')]):
         return jsonify(message='Missing params'), 400
 
-    user = {**data, 'id': str(uuid.uuid1())}
-    USERS_DICT[user['id']] = user
+    user = User(**payload)
+    db.session.add(user)
+    db.session.commit()
     return jsonify({})
 
 
@@ -24,40 +23,38 @@ def search_users():
     name = request.args.get('name', '')
     email = request.args.get('email', '')
 
-    filtered_users = list(
-        filter(
-            lambda user: all([
-                re.search(email, user.get('email'), re.IGNORECASE),
-                re.search(name, user.get('name'), re.IGNORECASE)
-            ]),
-            USERS_DICT.values()
-        )
+    query = User.query.filter(
+        User.name.ilike('%{}%'.format(name)),
+        User.email.ilike('%{}%'.format(email)),
     )
 
-    paginator = paginate(filtered_users)
-
     # Pagination
-    page = request.args.get('page', 0, type=int)
+    page = request.args.get('page', 1, type=int)
     page_size = request.args.get('pageSize', 10, type=int)
+
     if page_size > 100:
         return jsonify(
             message='Page size should be less than or equal to 100.'
         ), 400
+
+    pagination = query.paginate(page, page_size, error_out=False)
+    records = pagination.items or []
+    total = pagination.total
     return jsonify(dict(
-        records=paginator(page, page_size),
+        records=[record.serialize for record in records],
         page=page,
         pageSize=page_size,
-        total=len(filtered_users)
+        total=total
     ))
 
 
 @blueprint.route("/<string:user_id>", methods=('GET',))
 def get_user(user_id):
     try:
-        user = USERS_DICT.get(user_id, None)
+        user = User.query.get(user_id)
         if not user:
             return jsonify(message='User not found'), 404
-        return jsonify(user)
+        return jsonify(user.serialize)
     except ValueError:
         return jsonify(message='Wrong user_id'), 404
 
@@ -65,11 +62,12 @@ def get_user(user_id):
 @blueprint.route("/<string:user_id>", methods=('PUT',))
 def update_user(user_id):
     try:
-        user = USERS_DICT.get(int(user_id), None)
+        user = User.query.get(user_id)
         if not user:
             return jsonify(message='User not found'), 404
         data = request.get_json()
-        USERS_DICT[user['id']] = {**user, **data}
+        user.update(**data)
+        db.session.commit()
         return jsonify({})
     except ValueError:
         return jsonify(message='Wrong user_id'), 404
@@ -78,10 +76,11 @@ def update_user(user_id):
 @blueprint.route("/<string:user_id>", methods=('DELETE',))
 def delete_user(user_id):
     try:
-        user = USERS_DICT.get(int(user_id), None)
+        user = User.query.get(user_id)
         if not user:
             return jsonify(message='User not found'), 404
-        USERS_DICT.pop(user['id'])
+        user.query.delete()
+        db.session.commit()
         return jsonify({})
     except ValueError:
         return jsonify(message='Wrong user_id'), 404
