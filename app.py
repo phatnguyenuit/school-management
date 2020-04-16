@@ -106,6 +106,3 @@ def create_app(config=None):
         return jsonify(message='Hi there!')
 
     return app
-
-
-# Handle error: https://flask.palletsprojects.com/en/1.1.x/patterns/apierrors/
