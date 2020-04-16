@@ -1,3 +1,4 @@
+
 from flask import jsonify, request
 
 from models import db
@@ -5,12 +6,16 @@ from . import blueprint
 from .models import User
 
 
-@blueprint.route('/', methods=['POST'], strict_slashes=False)
+@blueprint.route('/', methods=['POST'])
 def create_user():
     payload = request.get_json()
     if any([key not in payload for key in ('name', 'email')]):
         return jsonify(message='Missing params'), 400
-
+    email = payload.get('email')
+    if User.query.filter_by(email=email).first():
+        return jsonify(
+            message='Email was existed.'
+        ), 400
     user = User(**payload)
     db.session.add(user)
     db.session.commit()

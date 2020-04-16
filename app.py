@@ -55,7 +55,6 @@ def setting_app(app):
             )
 
     app.cli.add_command(user_cli)
-    app.url_map.strict_slashes = False
 
 
 def config_logging(app):
@@ -95,6 +94,7 @@ def config_logging(app):
 def create_app(config=None):
     app = Flask(__name__)
     app.config.from_object(config or {})
+    app.url_map.strict_slashes = False
     init_database(app)
     register_blueprints(app)
 
@@ -106,3 +106,6 @@ def create_app(config=None):
         return jsonify(message='Hi there!')
 
     return app
+
+
+# Handle error: https://flask.palletsprojects.com/en/1.1.x/patterns/apierrors/
